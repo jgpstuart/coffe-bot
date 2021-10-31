@@ -1,1 +1,1 @@
-# coffe-bot
+# coffee-bot
