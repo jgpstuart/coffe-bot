@@ -1,0 +1,6 @@
+tweepy
+configparser
+requests
+weather
+yaml
+random
