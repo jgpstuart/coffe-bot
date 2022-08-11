@@ -4,3 +4,4 @@ requests
 weather
 yaml
 random
+logging

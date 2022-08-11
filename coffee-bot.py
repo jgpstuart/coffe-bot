@@ -4,6 +4,7 @@ import requests
 import weather
 import yaml
 import random
+import logging
 
 # picks a location to meet from coffee locations master list
 def pick_location(COFFEE_SHOP_LIST, VISITED_COFFEE_SHOPS):
@@ -45,6 +46,10 @@ def truncate_visited(COFFEE_SHOP_LIST, VISITED_COFFEE_SHOPS):
                     recently_visited.seek(0)
                     recently_visited.truncate(0)
                     yaml.dump(halved_locations, recently_visited)
+                    logging.info("Recently visited list successfully truncated")
+
+# start logging
+logging.basicConfig(filename='runtime.log', encoding='utf-8', format='%(asctime)s %(message)s' , level=logging.INFO)
 
 # load config varaibles
 config = configparser.ConfigParser()
@@ -65,6 +70,8 @@ VISITED_COFFEE_SHOPS = config['coffeeLocations']['coffee_shops_visited']
 checkForRain = True if config['weather']['check_rain'] == "True" else False
 checkForTemperature = True if config['weather']['check_temperature'] == "True" else False
 
+logging.info("Configuration loaded successfully")
+
 # Authenticate to Twitter
 auth = tweepy.OAuthHandler(API_KEY, API_KEY_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
@@ -74,9 +81,10 @@ api = tweepy.API(auth)
 
 try:
     api.verify_credentials()
+    logging.info("Connection to Twitter API successful")
 except:
     # TODO: create logging for this message
-    print("Error during authentication")
+    logging.critical("Error during authentication to Twitter API")
 
 # check weather for Calgary
 url = "https://api.openweathermap.org/data/2.5/forecast?lat=%s&lon=%s&appid=%s&units=metric" % (lat, long, WEATHER_API_KEY)
@@ -92,10 +100,11 @@ truncate_visited(COFFEE_SHOP_LIST, VISITED_COFFEE_SHOPS)
 
 # get a location from the locations list
 location_name, location_address, location_url = pick_location(COFFEE_SHOP_LIST, VISITED_COFFEE_SHOPS)
+logging.info('Location chosen: %s', location_name)
 
 # put the string together for the meeting
 tweet = "This week's meetup will be at " + location_name + " located at " + location_address + ": " + location_url + "\nSee you soon! #CoffeeOutside #coffeeyyc"
-print(tweet)
 
 # post the tweet
 api.update_status(tweet)
+logging.info("Tweet successfully posted")
